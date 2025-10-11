@@ -1,3 +1,6 @@
+-- sql/queries/example_queries.sql
+-- Demo queries: health checks, feature previews, and bar↔trade alignment.
+
 -- 1) Quick health checks
 SELECT * FROM symbols;
 SELECT COUNT(*) AS n_bars   FROM bars;
@@ -9,51 +12,61 @@ FROM bars
 ORDER BY symbol_id, ts
 LIMIT 10;
 
--- 3) Returns + RSI from the view (requires features_returns_rsi.sql installed)
+-- 3) Returns + RSI from the view
 SELECT symbol_id, ts, r_1m, rsi_14
 FROM features__returns_rsi
 WHERE symbol_id = 1
 ORDER BY ts
 LIMIT 10;
 
--- 4) VWAP + volume z-score from the view (requires features_vwap_volume.sql installed)
+-- 4) VWAP + volume z-score from the trades view
 SELECT symbol_id, ts, vwap_30m, z_vol_30m
 FROM features__vwap_volume_z
 WHERE symbol_id = 2
 ORDER BY ts
 LIMIT 10;
 
--- 5) Align trade-time features to bar-time grid (nearest trade <= bar ts)
---    This lets you join VWAP/z-volume to the bar rows for signal generation/backtests.
-WITH nearest_trade AS (
+-- 5) Align trade-time features to the bar grid (nearest trade <= bar ts)
+-- Portable pattern (no IGNORE NULLS): rank trades up to the bar and pick rn=1.
+WITH joined AS (
   SELECT
     b.symbol_id,
     b.ts AS bar_ts,
-    -- last trade timestamp at or before the bar timestamp (per symbol)
-    LAST_VALUE(t.ts) IGNORE NULLS OVER (
-      PARTITION BY b.symbol_id
-      ORDER BY b.ts
-      RANGE BETWEEN INTERVAL '30 seconds' PRECEDING AND CURRENT ROW
-    ) AS trade_ts
+    b.close,
+    r.r_1m,
+    r.rsi_14,
+    t.ts AS trade_ts
   FROM bars b
+  LEFT JOIN features__returns_rsi r
+    ON r.symbol_id = b.symbol_id AND r.ts = b.ts
   LEFT JOIN trades t
-    ON t.symbol_id = b.symbol_id
-   AND t.ts <= b.ts
+    ON t.symbol_id = b.symbol_id AND t.ts <= b.ts
+),
+ranked AS (
+  SELECT
+    symbol_id,
+    bar_ts,
+    close,
+    r_1m,
+    rsi_14,
+    trade_ts,
+    ROW_NUMBER() OVER (
+      PARTITION BY symbol_id, bar_ts
+      ORDER BY (trade_ts IS NULL), trade_ts DESC
+    ) AS rn
+  FROM joined
 )
 SELECT
-  b.symbol_id,
-  b.ts,
-  b.close,
+  r.symbol_id,
+  r.bar_ts AS ts,
+  r.close,
   r.r_1m,
   r.rsi_14,
   v.vwap_30m,
   v.z_vol_30m
-FROM bars b
-LEFT JOIN features__returns_rsi r
-  ON r.symbol_id = b.symbol_id AND r.ts = b.ts
-LEFT JOIN nearest_trade nt
-  ON nt.symbol_id = b.symbol_id AND nt.bar_ts = b.ts
+FROM ranked r
 LEFT JOIN features__vwap_volume_z v
-  ON v.symbol_id = nt.symbol_id AND v.ts = nt.trade_ts
-ORDER BY b.symbol_id, b.ts
+  ON v.symbol_id = r.symbol_id AND v.ts = r.trade_ts
+WHERE r.rn = 1
+ORDER BY r.symbol_id, r.bar_ts
 LIMIT 20;
