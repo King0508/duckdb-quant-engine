@@ -1,58 +1,136 @@
-# Market Data Analytics Database
+# Quantitative Finance Data Warehouse
 
-This is a small, local analytics database for market data using DuckDB, SQL, and Python. It loads CSVs into typed tables, installs a couple of feature views (returns/RSI, VWAP/volume), and shows how to align trade-time features to a minute bar grid without look-ahead. It’s meant to be easy to clone, run, and extend into simple backtests.
+[![CI/CD Pipeline](https://github.com/King0508/market-data-analytics-db/actions/workflows/ci.yml/badge.svg)](https://github.com/King0508/market-data-analytics-db/actions/workflows/ci.yml)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## What’s here
+A production-ready data warehouse for quantitative finance analysis. Features ETL pipelines, technical indicators (RSI, VWAP), REST API, and automated testing. Built with DuckDB for fast analytical queries on market data.
 
-Schema: `symbols`, `bars` (OHLCV), `trades`.  
-ETL/ELT: one script builds the DB, loads CSVs, and installs views.  
-Features: returns + RSI from bars; VWAP + volume z-score from trades.  
-Point-in-time: joins trade features to bars using “latest trade at or before bar time.”
+## ✨ Features
 
-## Project layout
+- **⚡ Fast Analytics**: DuckDB columnar storage optimized for OLAP workloads
+- **🔄 Complete ETL Pipeline**: Automated data generation, validation, and loading
+- **📊 Technical Indicators**: Pre-computed RSI, VWAP, returns, and volume analytics
+- **🌐 REST API**: FastAPI endpoints with interactive docs at `/docs`
+- **✅ Production Ready**: Comprehensive tests, CI/CD, logging, and error handling
+- **📈 Sample Data**: Realistic market data generator (no API keys needed!)
 
-market-data-analytics-db/  
-├─ data/ (seed CSVs: symbols, bars, trades)  
-├─ etl/  
-│ ├─ load_data.py (build DB: apply schema, load CSVs, install views)  
-│ └─ run_queries.py (run a .sql file and print results)  
-├─ sql/  
-│ ├─ schema.sql  
-│ ├─ views/  
-│ │ ├─ features_returns_rsi.sql  
-│ │ └─ features_vwap_volume.sql  
-│ └─ queries/  
-│ └─ example_queries.sql  
-└─ warehouse.duckdb (created locally, gitignored)
+## 🚀 Quick Start
 
-## Quickstart (Windows / PowerShell)
+```bash
+# Clone and setup
+git clone https://github.com/King0508/market-data-analytics-db.git
+cd market-data-analytics-db
+python -m venv venv
+venv\Scripts\activate  # Windows (on Mac/Linux: source venv/bin/activate)
+pip install -r requirements.txt
 
-1. clone and enter  
-   `git clone https://github.com/King0508/market-data-analytics-db.git`  
-   `cd market-data-analytics-db`
+# Generate sample data and load warehouse
+python etl/generate_data.py
+python etl/load_data.py
 
-2. create a virtualenv (optional)  
-   `py -m venv .venv`  
-   `.\.venv\Scripts\Activate.ps1`
+# Run analytics
+python analytics/run_analysis.py
 
-3. install dependencies  
-   `pip install -r requirements.txt`
+# Start REST API (optional)
+python -m api.main  # Visit http://localhost:8000/docs
+```
 
-4. build the database (schema + data + views)  
-   `python .\etl\load_data.py`
+## 📊 What's Inside
 
-5. run demo queries  
-   `python .\etl\run_queries.py .\sql\queries\example_queries.sql`
+### Database Schema
+- **symbols** - Security master data (ticker, name, sector, market cap)
+- **bars** - OHLCV price data with 6,000+ daily bars
+- **trades** - 125,000+ individual trade records
 
-You should see table counts, a few bar rows, returns/RSI, VWAP/volume, and a joined result with trade features aligned to bar timestamps.
+### Analytical Views
+- **features_returns_rsi** - Returns (1d, 5d, 20d) + RSI indicators (14, 28 period)
+- **features_vwap_volume** - VWAP, volume analytics, and anomaly detection
+- **daily_metrics** - Daily aggregated stats per symbol
 
-## Notes
+### API Endpoints
+```
+GET /symbols              - List all securities
+GET /bars/{ticker}        - OHLCV price data
+GET /trades/{ticker}      - Trade records
+GET /analytics/rsi/{ticker}    - RSI analysis
+GET /analytics/vwap/{ticker}   - VWAP analysis
+GET /analytics/signals    - Trading signals (overbought/oversold)
+```
 
-CTEs and window functions do the heavy lifting.  
-For VWAP we use a time-based window.  
-For RSI we use a row-based window.  
-For alignment we rank trades up to each bar and pick the latest trade at or before the bar.
+## 📈 Example Output
 
-## Next
+```python
+# Latest prices with RSI signals
+from analytics.run_analysis import AnalyticsEngine
 
-Add a forward-return label view, a tiny strategy script that writes positions and PnL, and a couple of SQL reports (daily PnL, hit rate, drawdown).
+with AnalyticsEngine() as engine:
+    signals = engine.get_rsi_signals()
+    print(signals)
+    
+# Output:
+#   symbol  price  rsi_14  rsi_signal
+#   MSFT   176.52   80.64  OVERBOUGHT  ⚠️
+#   META   269.93   16.93  OVERSOLD    ✅
+```
+
+## 🛠️ Tech Stack
+
+- **Database**: DuckDB (embedded analytical database)
+- **ETL**: Python with pandas, data validation
+- **API**: FastAPI + Uvicorn
+- **Testing**: pytest with 35+ test cases
+- **CI/CD**: GitHub Actions
+
+## 📚 Documentation
+
+- [Quick Start Guide](QUICKSTART.md) - Get running in 5 minutes
+- [Usage Examples](docs/USAGE_EXAMPLES.md) - Code samples and API usage
+- [Architecture](docs/ARCHITECTURE.md) - System design and components
+- [Contributing](CONTRIBUTING.md) - Development guidelines
+
+## 🎯 Use Cases
+
+- **Backtesting**: Historical market data for strategy testing
+- **Research**: Quantitative analysis and indicator development
+- **Education**: Learn SQL, databases, and financial analytics
+- **Prototyping**: Quick setup for financial applications
+- **Portfolio Projects**: Demonstrate full-stack data engineering skills
+
+## 🧪 Testing
+
+```bash
+pytest tests/ -v                    # Run all tests
+pytest --cov=. --cov-report=html   # With coverage report
+make test                           # Using Makefile
+```
+
+## 📦 Project Structure
+
+```
+market-data-analytics-db/
+├── etl/              # ETL pipeline (generate, validate, load)
+├── sql/              # Database schema and views
+├── api/              # FastAPI REST endpoints
+├── analytics/        # Pre-built analytical queries
+├── tests/            # Test suite (pytest)
+├── examples/         # Usage examples
+├── docs/             # Detailed documentation
+└── data/             # Generated CSV data
+```
+
+## 🤝 Contributing
+
+Contributions welcome! Please check [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## 📝 License
+
+MIT License - See [LICENSE](LICENSE) for details
+
+## 🎓 About
+
+This project demonstrates production-ready data engineering practices including ETL design, database optimization, API development, testing, and CI/CD automation. Perfect for quantitative finance portfolios and learning modern data stack technologies.
+
+---
+
+**Built with ❤️ for the quantitative finance community**
