@@ -1,17 +1,14 @@
 -- =============================================================================
--- Quantitative Finance Data Warehouse Schema
--- Database: DuckDB
--- Purpose: Store and analyze market data for quantitative research
+-- Quantitative Finance Data Warehouse Schema (DuckDB Compatible)
 -- =============================================================================
 
--- Drop existing tables if they exist (for clean reload)
+-- Drop existing tables if they exist
 DROP TABLE IF EXISTS trades;
 DROP TABLE IF EXISTS bars;
 DROP TABLE IF EXISTS symbols;
 
 -- =============================================================================
 -- SYMBOLS TABLE
--- Master table for all securities/instruments
 -- =============================================================================
 CREATE TABLE symbols (
     symbol_id    INTEGER PRIMARY KEY,
@@ -30,52 +27,38 @@ CREATE INDEX idx_symbols_sector ON symbols(sector);
 
 -- =============================================================================
 -- BARS TABLE
--- OHLCV price bars (minute, hourly, daily, etc.)
 -- =============================================================================
 CREATE TABLE bars (
     symbol_id    INTEGER NOT NULL,
     ts           TIMESTAMP NOT NULL,
-    open         DOUBLE NOT NULL,
+    open         DOUBLE NOT NULL CHECK (open > 0),
     high         DOUBLE NOT NULL,
     low          DOUBLE NOT NULL,
-    close        DOUBLE NOT NULL,
-    volume       BIGINT NOT NULL,
+    close        DOUBLE NOT NULL CHECK (close > 0),
+    volume       BIGINT NOT NULL CHECK (volume >= 0),
     
     PRIMARY KEY (symbol_id, ts),
     FOREIGN KEY (symbol_id) REFERENCES symbols(symbol_id)
 );
 
--- Indexes for common query patterns
 CREATE INDEX idx_bars_ts ON bars(ts);
 CREATE INDEX idx_bars_symbol_ts ON bars(symbol_id, ts);
 
 -- =============================================================================
 -- TRADES TABLE
--- Individual trade/tick data
 -- =============================================================================
 CREATE TABLE trades (
     symbol_id    INTEGER NOT NULL,
     ts           TIMESTAMP NOT NULL,
-    price        DOUBLE NOT NULL,
-    size         BIGINT NOT NULL,
+    price        DOUBLE NOT NULL CHECK (price > 0),
+    size         BIGINT NOT NULL CHECK (size > 0),
     side         VARCHAR CHECK (side IN ('BUY', 'SELL', 'UNKNOWN')),
     
     PRIMARY KEY (symbol_id, ts, price, size),
     FOREIGN KEY (symbol_id) REFERENCES symbols(symbol_id)
 );
 
--- Indexes for trade analysis
 CREATE INDEX idx_trades_ts ON trades(ts);
 CREATE INDEX idx_trades_symbol_ts ON trades(symbol_id, ts);
 CREATE INDEX idx_trades_side ON trades(side);
-
--- =============================================================================
--- SUMMARY STATISTICS
--- Pre-computed for query optimization
--- =============================================================================
-COMMENT ON TABLE symbols IS 'Security master data - tickers, names, sectors';
-COMMENT ON TABLE bars IS 'OHLCV price bars aggregated at various time intervals';
-COMMENT ON TABLE trades IS 'Individual trade records for tick-level analysis';
-
--- Note: Additional constraints are included in the CREATE TABLE statements above
 
