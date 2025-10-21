@@ -39,16 +39,19 @@ python -m api.main  # Visit http://localhost:8000/docs
 ## 📊 What's Inside
 
 ### Database Schema
+
 - **symbols** - Security master data (ticker, name, sector, market cap)
 - **bars** - OHLCV price data with 6,000+ daily bars
 - **trades** - 125,000+ individual trade records
 
 ### Analytical Views
+
 - **features_returns_rsi** - Returns (1d, 5d, 20d) + RSI indicators (14, 28 period)
 - **features_vwap_volume** - VWAP, volume analytics, and anomaly detection
 - **daily_metrics** - Daily aggregated stats per symbol
 
 ### API Endpoints
+
 ```
 GET /symbols              - List all securities
 GET /bars/{ticker}        - OHLCV price data
@@ -67,7 +70,7 @@ from analytics.run_analysis import AnalyticsEngine
 with AnalyticsEngine() as engine:
     signals = engine.get_rsi_signals()
     print(signals)
-    
+
 # Output:
 #   symbol  price  rsi_14  rsi_signal
 #   MSFT   176.52   80.64  OVERBOUGHT  ⚠️
