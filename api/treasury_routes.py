@@ -175,13 +175,13 @@ def get_latest_etfs():
     try:
         con = get_connection()
         result = con.execute("""
-            SELECT 
-                timestamp, ticker, name, 
-                close as open, close as high, close as low, close,
-                0 as volume,
-                return_1d, return_1w, return_1m
-            FROM v_latest_etfs
-            ORDER BY ticker
+            SELECT DISTINCT ON (e.ticker)
+                e.timestamp, e.ticker, e.name, 
+                e.open, e.high, e.low, e.close,
+                e.volume,
+                e.return_1d, e.return_1w, e.return_1m
+            FROM fixed_income_etfs e
+            ORDER BY e.ticker, e.timestamp DESC
         """).fetchdf()
         con.close()
         
