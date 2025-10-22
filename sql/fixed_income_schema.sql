@@ -85,7 +85,8 @@ SELECT DISTINCT ON (maturity)
     yield_rate,
     change_1d,
     change_1w,
-    change_1m
+    change_1m,
+    source
 FROM treasury_yields
 ORDER BY maturity, timestamp DESC;
 
