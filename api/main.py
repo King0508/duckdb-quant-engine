@@ -2,6 +2,7 @@
 FastAPI REST API for the quantitative finance data warehouse.
 
 Provides endpoints for accessing market data, analytics, and indicators.
+Extended with fixed-income sentiment analysis capabilities.
 """
 
 from fastapi import FastAPI, HTTPException, Query
@@ -15,14 +16,34 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 import config
 
+# Import routers
+try:
+    from api.treasury_routes import router as treasury_router
+    TREASURY_ENABLED = True
+except ImportError:
+    TREASURY_ENABLED = False
+
+try:
+    from api.sentiment_routes import router as sentiment_router
+    SENTIMENT_ENABLED = True
+except ImportError:
+    SENTIMENT_ENABLED = False
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Quantitative Finance Data Warehouse API",
-    description="REST API for accessing market data and analytics",
-    version="1.0.0",
+    description="REST API for accessing equity market data, fixed-income Treasuries, and sentiment analysis",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# Include routers if available
+if TREASURY_ENABLED:
+    app.include_router(treasury_router)
+
+if SENTIMENT_ENABLED:
+    app.include_router(sentiment_router)
 
 
 def get_db_connection():
@@ -39,18 +60,36 @@ def get_db_connection():
 @app.get("/")
 async def root():
     """Root endpoint with API information."""
+    endpoints = {
+        "docs": "/docs",
+        "health": "/health",
+        "equity_symbols": "/symbols",
+        "equity_bars": "/bars/{ticker}",
+        "equity_trades": "/trades/{ticker}",
+        "equity_analytics": "/analytics/*",
+    }
+    
+    if TREASURY_ENABLED:
+        endpoints["treasury_yields"] = "/treasury/yields/*"
+        endpoints["treasury_etfs"] = "/treasury/etfs/*"
+        endpoints["treasury_analytics"] = "/treasury/analytics/*"
+    
+    if SENTIMENT_ENABLED:
+        endpoints["sentiment_news"] = "/sentiment/news/*"
+        endpoints["sentiment_signals"] = "/sentiment/signals/*"
+        endpoints["sentiment_analytics"] = "/sentiment/analytics/*"
+    
     return {
         "name": "Quantitative Finance Data Warehouse API",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "status": "operational",
-        "endpoints": {
-            "docs": "/docs",
-            "health": "/health",
-            "symbols": "/symbols",
-            "bars": "/bars/{ticker}",
-            "trades": "/trades/{ticker}",
-            "analytics": "/analytics/*",
+        "features": {
+            "equity_market_data": True,
+            "technical_indicators": True,
+            "treasury_fixed_income": TREASURY_ENABLED,
+            "sentiment_analysis": SENTIMENT_ENABLED,
         },
+        "endpoints": endpoints,
     }
 
 
