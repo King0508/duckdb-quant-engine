@@ -99,6 +99,28 @@ def get_latest_yields():
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
+@router.get("/yields/curve", response_model=List[YieldCurve])
+def get_yield_curve():
+    """
+    Get the current Treasury yield curve.
+    
+    Returns yields across all maturities to plot the yield curve.
+    """
+    try:
+        con = get_connection()
+        result = con.execute("SELECT * FROM v_yield_curve").fetchdf()
+        con.close()
+        
+        if result.empty:
+            raise HTTPException(status_code=404, detail="No yield curve data available")
+        
+        return result.to_dict('records')
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
 @router.get("/yields/{maturity}", response_model=List[TreasuryYield])
 def get_yields_by_maturity(
     maturity: str,
@@ -131,28 +153,6 @@ def get_yields_by_maturity(
         
         if result.empty:
             raise HTTPException(status_code=404, detail=f"No data found for {maturity}")
-        
-        return result.to_dict('records')
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-
-@router.get("/yields/curve", response_model=List[YieldCurve])
-def get_yield_curve():
-    """
-    Get the current Treasury yield curve.
-    
-    Returns yields across all maturities to plot the yield curve.
-    """
-    try:
-        con = get_connection()
-        result = con.execute("SELECT * FROM v_yield_curve").fetchdf()
-        con.close()
-        
-        if result.empty:
-            raise HTTPException(status_code=404, detail="No yield curve data available")
         
         return result.to_dict('records')
     except HTTPException:
