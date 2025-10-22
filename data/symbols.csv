@@ -1,3 +1,9 @@
-symbol_id,ticker,asset_type
-1,SPY,EQUITY
-2,BTC-USD,CRYPTO
+symbol_id,ticker,name,sector,industry,market_cap,exchange,currency,created_at
+1,AAPL,Apple Inc.,Technology,Consumer Electronics,2800000000000,NASDAQ,USD,2022-01-01 00:00:00
+2,MSFT,Microsoft Corporation,Technology,Software,2500000000000,NASDAQ,USD,2022-01-01 00:00:00
+3,GOOGL,Alphabet Inc.,Technology,Internet Services,1700000000000,NASDAQ,USD,2022-01-01 00:00:00
+4,TSLA,Tesla Inc.,Consumer Cyclical,Auto Manufacturers,800000000000,NASDAQ,USD,2022-01-01 00:00:00
+5,AMZN,Amazon.com Inc.,Consumer Cyclical,Internet Retail,1600000000000,NASDAQ,USD,2022-01-01 00:00:00
+6,META,Meta Platforms Inc.,Technology,Social Media,900000000000,NASDAQ,USD,2022-01-01 00:00:00
+7,NVDA,NVIDIA Corporation,Technology,Semiconductors,1200000000000,NASDAQ,USD,2022-01-01 00:00:00
+8,AMD,Advanced Micro Devices,Technology,Semiconductors,200000000000,NASDAQ,USD,2022-01-01 00:00:00
