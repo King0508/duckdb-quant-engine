@@ -159,7 +159,7 @@ def main():
 
         print()
         print("=" * 80)
-        print("✅ ETL COMPLETE - Database loaded successfully!")
+        print("[SUCCESS] ETL COMPLETE - Database loaded successfully!")
         print("=" * 80)
         print(f"\nDatabase: {config.get_db_path()}")
         print("\nSummary:")
@@ -171,7 +171,7 @@ def main():
 
     except Exception as e:
         log(f"ETL pipeline failed: {str(e)}", "ERROR")
-        print(f"\n❌ Error: {e}")
+        print(f"\n[ERROR] Error: {e}")
         sys.exit(1)
 
 
