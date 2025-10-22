@@ -45,7 +45,7 @@ CREATE TABLE news_sentiment (
 CREATE INDEX idx_news_timestamp ON news_sentiment(timestamp);
 CREATE INDEX idx_news_sentiment_label ON news_sentiment(sentiment_label);
 CREATE INDEX idx_news_source ON news_sentiment(source);
-CREATE INDEX idx_news_high_impact ON news_sentiment(is_high_impact) WHERE is_high_impact = TRUE;
+CREATE INDEX idx_news_high_impact ON news_sentiment(is_high_impact);
 
 -- =============================================================================
 -- MARKET_EVENTS TABLE
