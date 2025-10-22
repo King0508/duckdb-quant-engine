@@ -9,12 +9,16 @@ DROP TABLE IF EXISTS sentiment_aggregates;
 DROP TABLE IF EXISTS market_events;
 DROP TABLE IF EXISTS news_sentiment;
 
+-- Drop and create sequence for news_id
+DROP SEQUENCE IF EXISTS news_sentiment_id_seq;
+CREATE SEQUENCE news_sentiment_id_seq START 1;
+
 -- =============================================================================
 -- NEWS_SENTIMENT TABLE
 -- Stores news articles with ML-based sentiment analysis
 -- =============================================================================
 CREATE TABLE news_sentiment (
-    news_id      INTEGER PRIMARY KEY,
+    news_id      INTEGER PRIMARY KEY DEFAULT nextval('news_sentiment_id_seq'),
     timestamp    TIMESTAMP NOT NULL,
     source       VARCHAR NOT NULL,
     title        VARCHAR NOT NULL,
@@ -51,8 +55,11 @@ CREATE INDEX idx_news_high_impact ON news_sentiment(is_high_impact);
 -- MARKET_EVENTS TABLE
 -- Stores major economic events (FOMC, CPI, NFP, etc.)
 -- =============================================================================
+DROP SEQUENCE IF EXISTS seq_market_events;
+CREATE SEQUENCE seq_market_events START 1;
+
 CREATE TABLE market_events (
-    event_id    INTEGER PRIMARY KEY,
+    event_id    INTEGER PRIMARY KEY DEFAULT nextval('seq_market_events'),
     timestamp   TIMESTAMP NOT NULL,
     event_type  VARCHAR NOT NULL,  -- 'FOMC', 'CPI', 'NFP', 'AUCTION', 'FED_SPEECH'
     description TEXT NOT NULL,
@@ -73,8 +80,11 @@ CREATE INDEX idx_events_type ON market_events(event_type);
 -- SENTIMENT_AGGREGATES TABLE
 -- Hourly aggregated sentiment metrics for analysis
 -- =============================================================================
+DROP SEQUENCE IF EXISTS seq_sentiment_aggregates;
+CREATE SEQUENCE seq_sentiment_aggregates START 1;
+
 CREATE TABLE sentiment_aggregates (
-    aggregate_id        INTEGER PRIMARY KEY,
+    aggregate_id        INTEGER PRIMARY KEY DEFAULT nextval('seq_sentiment_aggregates'),
     hour_timestamp      TIMESTAMP NOT NULL UNIQUE,
     
     -- Aggregate metrics
@@ -100,8 +110,11 @@ CREATE INDEX idx_agg_hour ON sentiment_aggregates(hour_timestamp);
 -- SENTIMENT_SIGNALS TABLE
 -- Trading signals based on sentiment + market data
 -- =============================================================================
+DROP SEQUENCE IF EXISTS seq_sentiment_signals;
+CREATE SEQUENCE seq_sentiment_signals START 1;
+
 CREATE TABLE sentiment_signals (
-    signal_id           INTEGER PRIMARY KEY,
+    signal_id           INTEGER PRIMARY KEY DEFAULT nextval('seq_sentiment_signals'),
     signal_timestamp    TIMESTAMP NOT NULL,
     
     -- Signal details
