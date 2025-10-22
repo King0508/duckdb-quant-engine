@@ -154,17 +154,17 @@ class DataValidator:
     def print_summary(self):
         """Print validation summary."""
         if self.errors:
-            print("\n  ❌ ERRORS:")
+            print("\n  [ERROR] ERRORS:")
             for error in self.errors:
                 print(f"     - {error}")
 
         if self.warnings:
-            print("\n  ⚠️  WARNINGS:")
+            print("\n  [WARNING] WARNINGS:")
             for warning in self.warnings:
                 print(f"     - {warning}")
 
         if not self.errors and not self.warnings:
-            print("  ✅ All validation checks passed!")
+            print("  [OK] All validation checks passed!")
 
 
 def validate_csv_files() -> bool:
@@ -214,9 +214,9 @@ def validate_csv_files() -> bool:
 
     print("\n" + "=" * 80)
     if all_valid:
-        print("✅ Data validation PASSED")
+        print("[SUCCESS] Data validation PASSED")
     else:
-        print("❌ Data validation FAILED")
+        print("[FAILED] Data validation FAILED")
     print("=" * 80 + "\n")
 
     return all_valid

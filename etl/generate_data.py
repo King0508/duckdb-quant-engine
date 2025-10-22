@@ -258,7 +258,7 @@ class MarketDataGenerator:
             writer.writeheader()
             writer.writerows(data)
 
-        print(f"✅ Generated {len(data):,} records → {filepath}")
+        print(f"[OK] Generated {len(data):,} records -> {filepath}")
 
 
 def main():
@@ -273,9 +273,9 @@ def main():
         start_date=config.DEFAULT_START_DATE, end_date=config.DEFAULT_END_DATE
     )
 
-    print(f"📅 Date range: {config.DEFAULT_START_DATE} to {config.DEFAULT_END_DATE}")
-    print(f"📊 Trading days: {len(generator.trading_days)}")
-    print(f"🏢 Symbols: {len(generator.COMPANIES)}")
+    print(f"Date range: {config.DEFAULT_START_DATE} to {config.DEFAULT_END_DATE}")
+    print(f"Trading days: {len(generator.trading_days)}")
+    print(f"Symbols: {len(generator.COMPANIES)}")
     print()
 
     # Generate data
@@ -294,7 +294,7 @@ def main():
 
     print()
     print("=" * 80)
-    print("✅ Data generation complete!")
+    print("[SUCCESS] Data generation complete!")
     print("=" * 80)
     print()
     print("Next steps:")
